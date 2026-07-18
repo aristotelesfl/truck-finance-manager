@@ -9,6 +9,7 @@ import { HomeScreen } from './screens/HomeScreen'
 import { VehiclesScreen } from './screens/VehiclesScreen'
 import { TagsScreen } from './screens/TagsScreen'
 import { TransactionFormScreen } from './screens/TransactionFormScreen'
+import { TransactionHistoryScreen } from './screens/TransactionHistoryScreen'
 
 function VehicleLayout() {
   return (
@@ -32,6 +33,7 @@ function App() {
             <Route element={<VehicleLayout />}>
               <Route element={<AppShellLayout />}>
                 <Route path="/" element={<HomeScreen />} />
+                <Route path="/historico" element={<TransactionHistoryScreen />} />
                 <Route path="/vehicles" element={<VehiclesScreen />} />
                 <Route path="/tags" element={<TagsScreen />} />
               </Route>

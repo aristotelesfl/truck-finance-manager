@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import {
+  Anchor,
   Button,
   Card,
   Center,
@@ -14,12 +15,13 @@ import {
 } from '@mantine/core'
 import { DonutChart } from '@mantine/charts'
 import { IconMinus, IconPlus } from '@tabler/icons-react'
-import { Navigate, useNavigate } from 'react-router-dom'
+import { Link, Navigate, useNavigate } from 'react-router-dom'
+import { TransactionListItem } from '../components/TransactionListItem'
 import { useVehicle } from '../contexts/VehicleContext'
 import { useTransactions } from '../hooks/useTransactions'
 import { formatCents, centsToNumber } from '../utils/currency'
 import { getPeriodRange } from '../utils/period'
-import { EXPENSE_TYPE_LABELS, PERIOD_LABELS } from '../types'
+import { PERIOD_LABELS } from '../types'
 import type { ExpenseType, Period, Transaction } from '../types'
 
 const PERIOD_OPTIONS: { value: Period; label: string }[] = (['month', '30d', 'year', 'all'] as Period[]).map(
@@ -191,7 +193,12 @@ export function HomeScreen() {
       </Stack>
 
       <Stack gap="sm">
-        <Title order={4}>Histórico de transações</Title>
+        <Group justify="space-between">
+          <Title order={4}>Histórico de transações</Title>
+          <Anchor component={Link} to="/historico" size="sm">
+            Ver tudo
+          </Anchor>
+        </Group>
         {historicoLoading ? (
           <Center py="md">
             <Loader size="sm" />
@@ -202,38 +209,8 @@ export function HomeScreen() {
           </Text>
         ) : (
           <Stack gap="xs">
-            {historico.map((t) => (
-              <Card
-                key={t.id}
-                withBorder
-                radius="md"
-                padding="sm"
-                style={{ cursor: 'pointer' }}
-                onClick={() => navigate(`/transactions/${t.id}/edit`)}
-              >
-                <Group justify="space-between" wrap="nowrap" align="flex-start">
-                  <Stack gap={0} style={{ minWidth: 0, maxWidth: '50%' }}>
-                    <Text size="sm" fw={500}>
-                      {t.kind === 'despesa' ? (t.expenseType ? EXPENSE_TYPE_LABELS[t.expenseType] : 'Despesa') : 'Receita'}
-                      {t.tagName ? ` · ${t.tagName}` : ''}
-                    </Text>
-                    {t.description && (
-                      <Text size="xs" c="dimmed" truncate="end">
-                        {t.description}
-                      </Text>
-                    )}
-                  </Stack>
-                  <Stack gap={0} align="flex-end">
-                    <Text size="xs" c="dimmed">
-                      {t.date.split('-').reverse().join('/')}
-                    </Text>
-                    <Text fw={600} c={t.kind === 'despesa' ? 'red' : 'green'}>
-                      {t.kind === 'despesa' ? '-' : '+'}
-                      {formatCents(t.valueCents)}
-                    </Text>
-                  </Stack>
-                </Group>
-              </Card>
+            {historico.slice(0, 5).map((t) => (
+              <TransactionListItem key={t.id} transaction={t} onClick={() => navigate(`/transactions/${t.id}/edit`)} />
             ))}
           </Stack>
         )}

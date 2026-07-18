@@ -1,5 +1,5 @@
 import { ActionIcon, AppShell as MantineAppShell, Group, Text, UnstyledButton, Stack } from '@mantine/core'
-import { IconLogout, IconTags, IconTruck, IconHome2 } from '@tabler/icons-react'
+import { IconLogout, IconTags, IconTruck, IconHome2, IconHistory } from '@tabler/icons-react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { modals } from '@mantine/modals'
 import { notifications } from '@mantine/notifications'
@@ -7,6 +7,7 @@ import { logOut } from '../../firebase/auth'
 
 const NAV_ITEMS = [
   { to: '/', label: 'Início', icon: IconHome2 },
+  { to: '/historico', label: 'Histórico', icon: IconHistory },
   { to: '/vehicles', label: 'Veículos', icon: IconTruck },
   { to: '/tags', label: 'Tags', icon: IconTags },
 ]
