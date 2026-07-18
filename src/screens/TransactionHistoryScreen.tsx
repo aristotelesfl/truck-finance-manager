@@ -1,13 +1,19 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Center, Loader, Select, SegmentedControl, Stack, Text, Title } from '@mantine/core'
+import { Button, Center, Loader, Select, SegmentedControl, Stack, Text, Title } from '@mantine/core'
+import { IconFileTypePdf } from '@tabler/icons-react'
 import { useNavigate } from 'react-router-dom'
 import { TransactionListItem } from '../components/TransactionListItem'
 import { useVehicle } from '../contexts/VehicleContext'
 import { useTags } from '../hooks/useTags'
 import { useTransactions } from '../hooks/useTransactions'
 import { getPeriodRange } from '../utils/period'
+import { generateTransactionReportPdf } from '../utils/pdfReport'
 import { EXPENSE_TYPE_LABELS, PERIOD_LABELS } from '../types'
 import type { ExpenseType, Period } from '../types'
+
+function formatDateLabel(isoDate: string): string {
+  return isoDate.split('-').reverse().join('/')
+}
 
 const PERIOD_OPTIONS: { value: Period; label: string }[] = (['month', '30d', 'year', 'all'] as Period[]).map(
   (value) => ({ value, label: PERIOD_LABELS[value] }),
@@ -29,7 +35,7 @@ type ExpenseTypeFilter = 'all' | ExpenseType
 
 export function TransactionHistoryScreen() {
   const navigate = useNavigate()
-  const { activeVehicleId } = useVehicle()
+  const { activeVehicleId, activeVehicle } = useVehicle()
   const [period, setPeriod] = useState<Period>('month')
   const [kindFilter, setKindFilter] = useState<KindFilter>('all')
   const [expenseTypeFilter, setExpenseTypeFilter] = useState<ExpenseTypeFilter>('all')
@@ -57,6 +63,19 @@ export function TransactionHistoryScreen() {
       return true
     })
   }, [transactions, kindFilter, expenseTypeFilter, tagFilter])
+
+  const handleExportPdf = () => {
+    if (!activeVehicle) return
+    const kindLabel = kindFilter === 'despesa' ? 'Despesas' : kindFilter === 'receita' ? 'Receitas' : 'Transações'
+    const rangeLabel = start && end ? `${formatDateLabel(start)} a ${formatDateLabel(end)}` : 'todo o período'
+    generateTransactionReportPdf({
+      vehicleLabel: activeVehicle.nickname ? `${activeVehicle.plate} (${activeVehicle.nickname})` : activeVehicle.plate,
+      periodLabel: PERIOD_LABELS[period],
+      rangeLabel,
+      kindLabel,
+      transactions: filtered,
+    })
+  }
 
   return (
     <Stack gap="md" pb="md">
@@ -87,6 +106,14 @@ export function TransactionHistoryScreen() {
             clearable
           />
         )}
+        <Button
+          variant="light"
+          leftSection={<IconFileTypePdf size={18} />}
+          onClick={handleExportPdf}
+          disabled={filtered.length === 0}
+        >
+          Exportar PDF
+        </Button>
       </Stack>
 
       {loading ? (
