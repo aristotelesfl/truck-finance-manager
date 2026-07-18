@@ -211,20 +211,27 @@ export function HomeScreen() {
                 style={{ cursor: 'pointer' }}
                 onClick={() => navigate(`/transactions/${t.id}/edit`)}
               >
-                <Group justify="space-between" wrap="nowrap">
-                  <Stack gap={0}>
+                <Group justify="space-between" wrap="nowrap" align="flex-start">
+                  <Stack gap={0} style={{ minWidth: 0, maxWidth: '50%' }}>
                     <Text size="sm" fw={500}>
                       {t.kind === 'despesa' ? (t.expenseType ? EXPENSE_TYPE_LABELS[t.expenseType] : 'Despesa') : 'Receita'}
                       {t.tagName ? ` · ${t.tagName}` : ''}
                     </Text>
+                    {t.description && (
+                      <Text size="xs" c="dimmed" truncate="end">
+                        {t.description}
+                      </Text>
+                    )}
+                  </Stack>
+                  <Stack gap={0} align="flex-end">
                     <Text size="xs" c="dimmed">
                       {t.date.split('-').reverse().join('/')}
                     </Text>
+                    <Text fw={600} c={t.kind === 'despesa' ? 'red' : 'green'}>
+                      {t.kind === 'despesa' ? '-' : '+'}
+                      {formatCents(t.valueCents)}
+                    </Text>
                   </Stack>
-                  <Text fw={600} c={t.kind === 'despesa' ? 'red' : 'green'}>
-                    {t.kind === 'despesa' ? '-' : '+'}
-                    {formatCents(t.valueCents)}
-                  </Text>
                 </Group>
               </Card>
             ))}
