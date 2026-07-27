@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Button, Center, Loader, Select, SegmentedControl, SimpleGrid, Stack, Text, Title } from '@mantine/core'
-import { IconFileTypePdf } from '@tabler/icons-react'
+import { ActionIcon, Button, Center, Group, Loader, Select, SegmentedControl, SimpleGrid, Stack, Text, Title } from '@mantine/core'
+import { IconFileTypePdf, IconSortAscending, IconSortDescending } from '@tabler/icons-react'
 import { useNavigate } from 'react-router-dom'
 import { TransactionListItem } from '../components/TransactionListItem'
 import { useVehicle } from '../contexts/VehicleContext'
@@ -30,8 +30,16 @@ const EXPENSE_TYPE_OPTIONS = [
   ...(Object.keys(EXPENSE_TYPE_LABELS) as ExpenseType[]).map((key) => ({ value: key, label: EXPENSE_TYPE_LABELS[key] })),
 ]
 
+const SORT_OPTIONS = [
+  { value: 'date', label: 'Data da transação' },
+  { value: 'createdAt', label: 'Data de lançamento' },
+  { value: 'value', label: 'Valor' },
+]
+
 type KindFilter = 'all' | 'despesa' | 'receita'
 type ExpenseTypeFilter = 'all' | ExpenseType
+type SortField = 'date' | 'createdAt' | 'value'
+type SortDirection = 'asc' | 'desc'
 
 export function TransactionHistoryScreen() {
   const navigate = useNavigate()
@@ -40,6 +48,8 @@ export function TransactionHistoryScreen() {
   const [kindFilter, setKindFilter] = useState<KindFilter>('all')
   const [expenseTypeFilter, setExpenseTypeFilter] = useState<ExpenseTypeFilter>('all')
   const [tagFilter, setTagFilter] = useState<string | null>(null)
+  const [sortField, setSortField] = useState<SortField>('date')
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
 
   const { start, end } = getPeriodRange(period)
   const { transactions, loading } = useTransactions(activeVehicleId, { start, end })
@@ -64,6 +74,16 @@ export function TransactionHistoryScreen() {
     })
   }, [transactions, kindFilter, expenseTypeFilter, tagFilter])
 
+  const sorted = useMemo(() => {
+    const list = [...filtered]
+    list.sort((a, b) => {
+      const diff =
+        sortField === 'date' ? a.date.localeCompare(b.date) : sortField === 'createdAt' ? a.createdAt - b.createdAt : a.valueCents - b.valueCents
+      return sortDirection === 'asc' ? diff : -diff
+    })
+    return list
+  }, [filtered, sortField, sortDirection])
+
   const handleExportPdf = () => {
     if (!activeVehicle) return
     const kindLabel = kindFilter === 'despesa' ? 'Despesas' : kindFilter === 'receita' ? 'Receitas' : 'Transações'
@@ -82,7 +102,7 @@ export function TransactionHistoryScreen() {
       <Title order={3}>Histórico de transações</Title>
 
       <Stack gap="sm">
-        <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }} spacing="sm">
+        <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
           <SegmentedControl value={period} onChange={(v) => setPeriod(v as Period)} data={PERIOD_OPTIONS} fullWidth />
           <SegmentedControl
             value={kindFilter}
@@ -108,6 +128,23 @@ export function TransactionHistoryScreen() {
             />
           )}
         </SimpleGrid>
+        <Group gap="xs">
+          <Select
+            data={SORT_OPTIONS}
+            value={sortField}
+            onChange={(v) => v && setSortField(v as SortField)}
+            allowDeselect={false}
+            style={{ flex: 1 }}
+          />
+          <ActionIcon
+            variant="default"
+            size="lg"
+            onClick={() => setSortDirection((d) => (d === 'asc' ? 'desc' : 'asc'))}
+            aria-label={sortDirection === 'asc' ? 'Ordem crescente' : 'Ordem decrescente'}
+          >
+            {sortDirection === 'asc' ? <IconSortAscending size={18} /> : <IconSortDescending size={18} />}
+          </ActionIcon>
+        </Group>
         <Button
           variant="light"
           leftSection={<IconFileTypePdf size={18} />}
@@ -122,13 +159,13 @@ export function TransactionHistoryScreen() {
         <Center py="xl">
           <Loader />
         </Center>
-      ) : filtered.length === 0 ? (
+      ) : sorted.length === 0 ? (
         <Text c="dimmed" size="sm" ta="center" py="lg">
           Nenhuma transação encontrada com esses filtros.
         </Text>
       ) : (
         <Stack gap="xs">
-          {filtered.map((t) => (
+          {sorted.map((t) => (
             <TransactionListItem key={t.id} transaction={t} onClick={() => navigate(`/transactions/${t.id}/edit`)} />
           ))}
         </Stack>
