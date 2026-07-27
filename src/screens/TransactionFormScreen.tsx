@@ -16,7 +16,6 @@ import { useForm } from '@mantine/form'
 import { modals } from '@mantine/modals'
 import { notifications } from '@mantine/notifications'
 import { IconArrowLeft, IconTrash } from '@tabler/icons-react'
-import { format, parse } from 'date-fns'
 import { Navigate, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { TagPicker } from '../components/TagPicker'
 import { useAuth } from '../contexts/AuthContext'
@@ -24,17 +23,16 @@ import { useVehicle } from '../contexts/VehicleContext'
 import { createTransaction, deleteTransaction, getTransaction, updateTransaction } from '../firebase/firestore'
 import { centsToNumber, numberToCents } from '../utils/currency'
 import { firebaseErrorMessage } from '../utils/firebaseErrors'
+import { todayKey } from '../utils/period'
 import { EXPENSE_TYPE_LABELS } from '../types'
 import type { ExpenseType, TransactionKind } from '../types'
-
-const DATE_FORMAT = 'yyyy-MM-dd'
 
 interface FormValues {
   expenseType: ExpenseType
   tagId: string | null
   tagName: string | null
   value: number | ''
-  date: Date | null
+  date: string | null
   description: string
 }
 
@@ -65,7 +63,7 @@ export function TransactionFormScreen() {
       tagId: null,
       tagName: null,
       value: '',
-      date: new Date(),
+      date: todayKey(),
       description: '',
     },
     validate: {
@@ -89,7 +87,7 @@ export function TransactionFormScreen() {
           tagId: transaction.tagId ?? null,
           tagName: transaction.tagName ?? null,
           value: centsToNumber(transaction.valueCents),
-          date: parse(transaction.date, DATE_FORMAT, new Date()),
+          date: transaction.date,
           description: transaction.description,
         })
       })
@@ -115,7 +113,7 @@ export function TransactionFormScreen() {
         tagId: kind === 'despesa' ? (values.tagId ?? undefined) : undefined,
         tagName: kind === 'despesa' ? (values.tagName ?? undefined) : undefined,
         valueCents: numberToCents(values.value),
-        date: format(values.date, DATE_FORMAT),
+        date: values.date,
         description: values.description.trim(),
       }
       if (isEditing && transactionId) {
