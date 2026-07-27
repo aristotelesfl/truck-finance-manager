@@ -144,7 +144,7 @@ export function HomeScreen() {
           <Loader size="sm" />
         </Center>
       ) : (
-        <Stack gap="sm">
+        <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="sm">
           <Card withBorder radius="md" padding="md">
             <Text size="sm" c="dimmed">
               Receitas
@@ -169,52 +169,54 @@ export function HomeScreen() {
               {formatCents(lucroCents)}
             </Text>
           </Card>
-        </Stack>
+        </SimpleGrid>
       )}
 
-      <Stack gap="sm">
-        <Title order={4}>Gráfico</Title>
-        <SegmentedControl
-          value={chartMode}
-          onChange={(v) => setChartMode(v as ChartMode)}
-          data={CHART_MODE_OPTIONS}
-          fullWidth
-          orientation="vertical"
-        />
-        {chartData.length === 0 ? (
-          <Text c="dimmed" size="sm" ta="center" py="lg">
-            Nenhum dado neste período.
-          </Text>
-        ) : (
-          <Center>
-            <DonutChart data={chartData} withLabelsLine withLabels size={220} thickness={28} />
-          </Center>
-        )}
-      </Stack>
+      <SimpleGrid cols={{ base: 1, md: 2 }} spacing="md" verticalSpacing="md">
+        <Stack gap="sm">
+          <Title order={4}>Gráfico</Title>
+          <SegmentedControl
+            value={chartMode}
+            onChange={(v) => setChartMode(v as ChartMode)}
+            data={CHART_MODE_OPTIONS}
+            fullWidth
+            orientation="vertical"
+          />
+          {chartData.length === 0 ? (
+            <Text c="dimmed" size="sm" ta="center" py="lg">
+              Nenhum dado neste período.
+            </Text>
+          ) : (
+            <Center>
+              <DonutChart data={chartData} withLabelsLine withLabels size={220} thickness={28} />
+            </Center>
+          )}
+        </Stack>
 
-      <Stack gap="sm">
-        <Group justify="space-between">
-          <Title order={4}>Histórico de transações</Title>
-          <Anchor component={Link} to="/historico" size="sm">
-            Ver tudo
-          </Anchor>
-        </Group>
-        {historicoLoading ? (
-          <Center py="md">
-            <Loader size="sm" />
-          </Center>
-        ) : historico.length === 0 ? (
-          <Text c="dimmed" size="sm" ta="center" py="lg">
-            Nenhuma transação neste período.
-          </Text>
-        ) : (
-          <Stack gap="xs">
-            {historico.slice(0, 5).map((t) => (
-              <TransactionListItem key={t.id} transaction={t} onClick={() => navigate(`/transactions/${t.id}/edit`)} />
-            ))}
-          </Stack>
-        )}
-      </Stack>
+        <Stack gap="sm">
+          <Group justify="space-between">
+            <Title order={4}>Histórico de transações</Title>
+            <Anchor component={Link} to="/historico" size="sm">
+              Ver tudo
+            </Anchor>
+          </Group>
+          {historicoLoading ? (
+            <Center py="md">
+              <Loader size="sm" />
+            </Center>
+          ) : historico.length === 0 ? (
+            <Text c="dimmed" size="sm" ta="center" py="lg">
+              Nenhuma transação neste período.
+            </Text>
+          ) : (
+            <Stack gap="xs">
+              {historico.slice(0, 5).map((t) => (
+                <TransactionListItem key={t.id} transaction={t} onClick={() => navigate(`/transactions/${t.id}/edit`)} />
+              ))}
+            </Stack>
+          )}
+        </Stack>
+      </SimpleGrid>
     </Stack>
   )
 }

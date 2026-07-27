@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Button, Center, Loader, Select, SegmentedControl, Stack, Text, Title } from '@mantine/core'
+import { Button, Center, Loader, Select, SegmentedControl, SimpleGrid, Stack, Text, Title } from '@mantine/core'
 import { IconFileTypePdf } from '@tabler/icons-react'
 import { useNavigate } from 'react-router-dom'
 import { TransactionListItem } from '../components/TransactionListItem'
@@ -82,30 +82,32 @@ export function TransactionHistoryScreen() {
       <Title order={3}>Histórico de transações</Title>
 
       <Stack gap="sm">
-        <SegmentedControl value={period} onChange={(v) => setPeriod(v as Period)} data={PERIOD_OPTIONS} fullWidth />
-        <SegmentedControl
-          value={kindFilter}
-          onChange={(v) => setKindFilter(v as KindFilter)}
-          data={KIND_OPTIONS}
-          fullWidth
-        />
-        {kindFilter !== 'receita' && (
-          <Select
-            data={EXPENSE_TYPE_OPTIONS}
-            value={expenseTypeFilter}
-            onChange={(v) => v && setExpenseTypeFilter(v as ExpenseTypeFilter)}
-            allowDeselect={false}
+        <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }} spacing="sm">
+          <SegmentedControl value={period} onChange={(v) => setPeriod(v as Period)} data={PERIOD_OPTIONS} fullWidth />
+          <SegmentedControl
+            value={kindFilter}
+            onChange={(v) => setKindFilter(v as KindFilter)}
+            data={KIND_OPTIONS}
+            fullWidth
           />
-        )}
-        {kindFilter !== 'receita' && expenseTypeFilter !== 'all' && (
-          <Select
-            placeholder="Todas as tags"
-            data={tags.map((t) => ({ value: t.id, label: t.name }))}
-            value={tagFilter}
-            onChange={setTagFilter}
-            clearable
-          />
-        )}
+          {kindFilter !== 'receita' && (
+            <Select
+              data={EXPENSE_TYPE_OPTIONS}
+              value={expenseTypeFilter}
+              onChange={(v) => v && setExpenseTypeFilter(v as ExpenseTypeFilter)}
+              allowDeselect={false}
+            />
+          )}
+          {kindFilter !== 'receita' && expenseTypeFilter !== 'all' && (
+            <Select
+              placeholder="Todas as tags"
+              data={tags.map((t) => ({ value: t.id, label: t.name }))}
+              value={tagFilter}
+              onChange={setTagFilter}
+              clearable
+            />
+          )}
+        </SimpleGrid>
         <Button
           variant="light"
           leftSection={<IconFileTypePdf size={18} />}
@@ -125,11 +127,11 @@ export function TransactionHistoryScreen() {
           Nenhuma transação encontrada com esses filtros.
         </Text>
       ) : (
-        <Stack gap="xs">
+        <SimpleGrid cols={{ base: 1, md: 2, xl: 3 }} spacing="xs">
           {filtered.map((t) => (
             <TransactionListItem key={t.id} transaction={t} onClick={() => navigate(`/transactions/${t.id}/edit`)} />
           ))}
-        </Stack>
+        </SimpleGrid>
       )}
     </Stack>
   )

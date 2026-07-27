@@ -6,6 +6,7 @@ import {
   Center,
   Group,
   Modal,
+  SimpleGrid,
   Stack,
   Text,
   TextInput,
@@ -120,7 +121,7 @@ export function VehiclesScreen() {
         </Center>
       )}
 
-      <Stack gap="sm">
+      <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="sm">
         {vehicles.map((vehicle) => {
           const active = vehicle.id === activeVehicleId
           return (
@@ -149,7 +150,7 @@ export function VehiclesScreen() {
             </Card>
           )
         })}
-      </Stack>
+      </SimpleGrid>
 
       <Modal opened={modalOpen} onClose={() => setModalOpen(false)} title={editingVehicle ? 'Editar caminhão' : 'Novo caminhão'}>
         <form onSubmit={form.onSubmit(handleSubmit)}>

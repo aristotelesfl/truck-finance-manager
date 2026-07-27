@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ActionIcon, Button, Card, Group, Modal, Stack, Tabs, Text, TextInput, Title } from '@mantine/core'
+import { ActionIcon, Button, Card, Group, Modal, SimpleGrid, Stack, Tabs, Text, TextInput, Title } from '@mantine/core'
 import { useForm } from '@mantine/form'
 import { modals } from '@mantine/modals'
 import { notifications } from '@mantine/notifications'
@@ -102,21 +102,23 @@ export function TagsScreen() {
                   Nenhuma tag cadastrada ainda.
                 </Text>
               )}
-              {tags.map((tag) => (
-                <Card key={tag.id} withBorder radius="md" padding="sm">
-                  <Group justify="space-between">
-                    <Text>{tag.name}</Text>
-                    <Group gap={4}>
-                      <ActionIcon variant="subtle" onClick={() => openEditModal(tag)} aria-label="Renomear">
-                        <IconPencil size={16} />
-                      </ActionIcon>
-                      <ActionIcon variant="subtle" color="red" onClick={() => handleDelete(tag)} aria-label="Excluir">
-                        <IconTrash size={16} />
-                      </ActionIcon>
+              <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="sm">
+                {tags.map((tag) => (
+                  <Card key={tag.id} withBorder radius="md" padding="sm">
+                    <Group justify="space-between">
+                      <Text>{tag.name}</Text>
+                      <Group gap={4}>
+                        <ActionIcon variant="subtle" onClick={() => openEditModal(tag)} aria-label="Renomear">
+                          <IconPencil size={16} />
+                        </ActionIcon>
+                        <ActionIcon variant="subtle" color="red" onClick={() => handleDelete(tag)} aria-label="Excluir">
+                          <IconTrash size={16} />
+                        </ActionIcon>
+                      </Group>
                     </Group>
-                  </Group>
-                </Card>
-              ))}
+                  </Card>
+                ))}
+              </SimpleGrid>
             </Stack>
           </Tabs.Panel>
         ))}

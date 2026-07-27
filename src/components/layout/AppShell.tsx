@@ -1,4 +1,5 @@
-import { ActionIcon, AppShell as MantineAppShell, Group, Text, UnstyledButton, Stack } from '@mantine/core'
+import { ActionIcon, AppShell as MantineAppShell, Container, Group, Text, UnstyledButton, Stack } from '@mantine/core'
+import { useMediaQuery } from '@mantine/hooks'
 import { IconLogout, IconTags, IconTruck, IconHome2, IconHistory } from '@tabler/icons-react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { modals } from '@mantine/modals'
@@ -15,6 +16,7 @@ const NAV_ITEMS = [
 export function AppShellLayout() {
   const location = useLocation()
   const navigate = useNavigate()
+  const isDesktop = useMediaQuery('(min-width: 48em)', false)
 
   const handleLogout = () => {
     modals.openConfirmModal({
@@ -30,7 +32,12 @@ export function AppShellLayout() {
   }
 
   return (
-    <MantineAppShell header={{ height: 56 }} footer={{ height: 68 }} padding="md">
+    <MantineAppShell
+      header={{ height: 56 }}
+      navbar={{ width: 240, breakpoint: 'sm', collapsed: { mobile: true, desktop: false } }}
+      footer={{ height: 68, collapsed: isDesktop }}
+      padding="md"
+    >
       <MantineAppShell.Header>
         <Group h="100%" px="md" justify="space-between">
           <Text fw={700}>Truck Finance</Text>
@@ -40,11 +47,41 @@ export function AppShellLayout() {
         </Group>
       </MantineAppShell.Header>
 
+      <MantineAppShell.Navbar p="sm">
+        <Stack gap={4}>
+          {NAV_ITEMS.map((item) => {
+            const active = location.pathname === item.to
+            const Icon = item.icon
+            return (
+              <UnstyledButton
+                key={item.to}
+                onClick={() => navigate(item.to)}
+                px="sm"
+                py={8}
+                style={{
+                  borderRadius: 'var(--mantine-radius-md)',
+                  backgroundColor: active ? 'var(--mantine-color-blue-light)' : undefined,
+                }}
+              >
+                <Group gap="sm">
+                  <Icon size={20} color={active ? 'var(--mantine-color-blue-6)' : 'var(--mantine-color-gray-6)'} />
+                  <Text size="sm" fw={active ? 600 : 400} c={active ? 'blue' : undefined}>
+                    {item.label}
+                  </Text>
+                </Group>
+              </UnstyledButton>
+            )
+          })}
+        </Stack>
+      </MantineAppShell.Navbar>
+
       <MantineAppShell.Main>
-        <Outlet />
+        <Container size="lg" px={0}>
+          <Outlet />
+        </Container>
       </MantineAppShell.Main>
 
-      <MantineAppShell.Footer>
+      <MantineAppShell.Footer hiddenFrom="sm">
         <Group h="100%" grow px="xs">
           {NAV_ITEMS.map((item) => {
             const active = location.pathname === item.to
