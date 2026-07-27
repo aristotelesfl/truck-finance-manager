@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ActionIcon, Button, Card, Group, Modal, SimpleGrid, Stack, Tabs, Text, TextInput, Title } from '@mantine/core'
+import { ActionIcon, Button, Card, Group, Modal, Stack, Tabs, Text, TextInput, Title } from '@mantine/core'
 import { useForm } from '@mantine/form'
 import { modals } from '@mantine/modals'
 import { notifications } from '@mantine/notifications'
@@ -102,7 +102,7 @@ export function TagsScreen() {
                   Nenhuma tag cadastrada ainda.
                 </Text>
               )}
-              <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="sm">
+              <Stack gap="sm">
                 {tags.map((tag) => (
                   <Card key={tag.id} withBorder radius="md" padding="sm">
                     <Group justify="space-between">
@@ -118,7 +118,7 @@ export function TagsScreen() {
                     </Group>
                   </Card>
                 ))}
-              </SimpleGrid>
+              </Stack>
             </Stack>
           </Tabs.Panel>
         ))}

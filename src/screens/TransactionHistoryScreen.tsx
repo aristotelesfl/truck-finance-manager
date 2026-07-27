@@ -127,11 +127,11 @@ export function TransactionHistoryScreen() {
           Nenhuma transação encontrada com esses filtros.
         </Text>
       ) : (
-        <SimpleGrid cols={{ base: 1, md: 2, xl: 3 }} spacing="xs">
+        <Stack gap="xs">
           {filtered.map((t) => (
             <TransactionListItem key={t.id} transaction={t} onClick={() => navigate(`/transactions/${t.id}/edit`)} />
           ))}
-        </SimpleGrid>
+        </Stack>
       )}
     </Stack>
   )
