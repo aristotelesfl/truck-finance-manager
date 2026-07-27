@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { ActionIcon, Button, Center, Group, Loader, Select, SegmentedControl, SimpleGrid, Stack, Text, Title } from '@mantine/core'
 import { IconFileTypePdf, IconSortAscending, IconSortDescending } from '@tabler/icons-react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { TransactionListItem } from '../components/TransactionListItem'
 import { useVehicle } from '../contexts/VehicleContext'
 import { useTags } from '../hooks/useTags'
@@ -43,27 +43,34 @@ type SortDirection = 'asc' | 'desc'
 
 export function TransactionHistoryScreen() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { activeVehicleId, activeVehicle } = useVehicle()
-  const [period, setPeriod] = useState<Period>('month')
-  const [kindFilter, setKindFilter] = useState<KindFilter>('all')
-  const [expenseTypeFilter, setExpenseTypeFilter] = useState<ExpenseTypeFilter>('all')
-  const [tagFilter, setTagFilter] = useState<string | null>(null)
-  const [sortField, setSortField] = useState<SortField>('date')
-  const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  const period = (searchParams.get('period') as Period | null) ?? 'month'
+  const kindFilter = (searchParams.get('kind') as KindFilter | null) ?? 'all'
+  const expenseTypeFilter = (searchParams.get('type') as ExpenseTypeFilter | null) ?? 'all'
+  const tagFilter = searchParams.get('tag')
+  const sortField = (searchParams.get('sort') as SortField | null) ?? 'date'
+  const sortDirection = (searchParams.get('dir') as SortDirection | null) ?? 'desc'
+
+  const updateParams = (updates: Record<string, string | null>) => {
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev)
+        for (const [key, value] of Object.entries(updates)) {
+          if (value === null) next.delete(key)
+          else next.set(key, value)
+        }
+        return next
+      },
+      { replace: true },
+    )
+  }
 
   const { start, end } = getPeriodRange(period)
   const { transactions, loading } = useTransactions(activeVehicleId, { start, end })
   const { tags } = useTags(expenseTypeFilter === 'all' ? 'compra' : expenseTypeFilter)
-
-  useEffect(() => {
-    setTagFilter(null)
-  }, [expenseTypeFilter])
-
-  useEffect(() => {
-    if (kindFilter === 'receita') {
-      setExpenseTypeFilter('all')
-    }
-  }, [kindFilter])
 
   const filtered = useMemo(() => {
     return transactions.filter((t) => {
@@ -97,16 +104,25 @@ export function TransactionHistoryScreen() {
     })
   }
 
+  const openTransaction = (id: string) => {
+    navigate(`/transactions/${id}/edit`, { state: { from: location.pathname + location.search } })
+  }
+
   return (
     <Stack gap="md" pb="md">
       <Title order={3}>Histórico de transações</Title>
 
       <Stack gap="sm">
         <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
-          <SegmentedControl value={period} onChange={(v) => setPeriod(v as Period)} data={PERIOD_OPTIONS} fullWidth />
+          <SegmentedControl
+            value={period}
+            onChange={(v) => updateParams({ period: v })}
+            data={PERIOD_OPTIONS}
+            fullWidth
+          />
           <SegmentedControl
             value={kindFilter}
-            onChange={(v) => setKindFilter(v as KindFilter)}
+            onChange={(v) => updateParams(v === 'receita' ? { kind: v, type: null, tag: null } : { kind: v })}
             data={KIND_OPTIONS}
             fullWidth
           />
@@ -114,37 +130,38 @@ export function TransactionHistoryScreen() {
             <Select
               data={EXPENSE_TYPE_OPTIONS}
               value={expenseTypeFilter}
-              onChange={(v) => v && setExpenseTypeFilter(v as ExpenseTypeFilter)}
+              onChange={(v) => v && updateParams({ type: v, tag: null })}
               allowDeselect={false}
             />
           )}
-          {kindFilter !== 'receita' && expenseTypeFilter !== 'all' && (
+          {kindFilter !== 'receita' && (
             <Select
               placeholder="Todas as tags"
               data={tags.map((t) => ({ value: t.id, label: t.name }))}
               value={tagFilter}
-              onChange={setTagFilter}
+              onChange={(v) => updateParams({ tag: v })}
+              disabled={expenseTypeFilter === 'all'}
               clearable
             />
           )}
+          <Group gap="xs" wrap="nowrap">
+            <Select
+              data={SORT_OPTIONS}
+              value={sortField}
+              onChange={(v) => v && updateParams({ sort: v })}
+              allowDeselect={false}
+              style={{ flex: 1 }}
+            />
+            <ActionIcon
+              variant="default"
+              size="lg"
+              onClick={() => updateParams({ dir: sortDirection === 'asc' ? 'desc' : 'asc' })}
+              aria-label={sortDirection === 'asc' ? 'Ordem crescente' : 'Ordem decrescente'}
+            >
+              {sortDirection === 'asc' ? <IconSortAscending size={18} /> : <IconSortDescending size={18} />}
+            </ActionIcon>
+          </Group>
         </SimpleGrid>
-        <Group gap="xs">
-          <Select
-            data={SORT_OPTIONS}
-            value={sortField}
-            onChange={(v) => v && setSortField(v as SortField)}
-            allowDeselect={false}
-            style={{ flex: 1 }}
-          />
-          <ActionIcon
-            variant="default"
-            size="lg"
-            onClick={() => setSortDirection((d) => (d === 'asc' ? 'desc' : 'asc'))}
-            aria-label={sortDirection === 'asc' ? 'Ordem crescente' : 'Ordem decrescente'}
-          >
-            {sortDirection === 'asc' ? <IconSortAscending size={18} /> : <IconSortDescending size={18} />}
-          </ActionIcon>
-        </Group>
         <Button
           variant="light"
           leftSection={<IconFileTypePdf size={18} />}
@@ -166,7 +183,7 @@ export function TransactionHistoryScreen() {
       ) : (
         <Stack gap="xs">
           {sorted.map((t) => (
-            <TransactionListItem key={t.id} transaction={t} onClick={() => navigate(`/transactions/${t.id}/edit`)} />
+            <TransactionListItem key={t.id} transaction={t} onClick={() => openTransaction(t.id)} />
           ))}
         </Stack>
       )}

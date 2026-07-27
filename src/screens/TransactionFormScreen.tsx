@@ -17,7 +17,7 @@ import { modals } from '@mantine/modals'
 import { notifications } from '@mantine/notifications'
 import { IconArrowLeft, IconTrash } from '@tabler/icons-react'
 import { format, parse } from 'date-fns'
-import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { Navigate, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { TagPicker } from '../components/TagPicker'
 import { useAuth } from '../contexts/AuthContext'
 import { useVehicle } from '../contexts/VehicleContext'
@@ -47,10 +47,12 @@ export function TransactionFormScreen() {
   const { user } = useAuth()
   const { activeVehicleId } = useVehicle()
   const navigate = useNavigate()
+  const location = useLocation()
   const { id: transactionId } = useParams<{ id: string }>()
   const [searchParams] = useSearchParams()
   const isEditing = Boolean(transactionId)
   const kindFromQuery = (searchParams.get('kind') as TransactionKind | null) ?? 'despesa'
+  const returnTo = (location.state as { from?: string } | null)?.from ?? '/'
 
   const [kind, setKind] = useState<TransactionKind>(kindFromQuery)
   const [loadingTransaction, setLoadingTransaction] = useState(isEditing)
@@ -123,7 +125,7 @@ export function TransactionFormScreen() {
         await createTransaction(user.uid, activeVehicleId, input)
         notifications.show({ message: kind === 'despesa' ? 'Despesa registrada.' : 'Receita registrada.', color: 'green' })
       }
-      navigate('/')
+      navigate(returnTo)
     } catch (error) {
       notifications.show({ message: firebaseErrorMessage(error), color: 'red' })
     } finally {
@@ -143,7 +145,7 @@ export function TransactionFormScreen() {
         try {
           await deleteTransaction(user.uid, activeVehicleId, transactionId)
           notifications.show({ message: 'Transação excluída.', color: 'green' })
-          navigate('/')
+          navigate(returnTo)
         } catch (error) {
           notifications.show({ message: firebaseErrorMessage(error), color: 'red' })
         }
